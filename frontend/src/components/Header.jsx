@@ -1,31 +1,50 @@
 import React from 'react'
 import { assets } from '../assets/assets'
-import { FiArrowRight } from 'react-icons/fi';
+import { FiArrowRight } from 'react-icons/fi'
 
 const Header = () => {
   return (
-    <div className='flex flex-col md:flex-row flex-wrap bg-primary rounded-lg px-6 md:px-10 lg:px-20'>
+    <header className="bg-gradient-to-br from-blue-600 to-cyan-500 text-white py-16 px-6 md:px-20 rounded-3xl shadow-lg">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
 
-        {/*---------left side-------------- */}
-        <div className='md:w-1/2 flex flex-col items-start justify-center gap-4 py-10 m-auto md:py-[10vw] md:mb-[-30px] '>
-            <p className='text-3xl md:text-4xl lg:text-5xl text-white font-semibold leading-tight md:leading-tight lg:leading-tight'>
-                Book Appointment <br /> With Trusted Doctors
-            </p >
-            <div className='flex flex-col md:flex-row items-center gap-3 text-white text-sm font-light'>
-              <img className='w-28' src={assets.group_profiles} alt="" />
-              <p>Simply browse through our extensive list of trusted doctors,<br className='hidden sm:block'/> schedule your appointment hassle-free.  </p>
-            </div>
-            <a href="#speciality" className='flex items-center gap-2 bg-white px-8 py-3 rounded-full text-gray-600 text-sm-m-auto md:m-0 hover:scale-105 transition-all duration-300'>
-              Book appointment <FiArrowRight className="w-4 inline-block" />
-            </a>
+        {/* Left Side */}
+        <div className="flex-1 flex flex-col gap-6">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+            Find and Book <br className="hidden md:block" />
+            Trusted Doctors Instantly
+          </h1>
+          <p className="text-white text-sm md:text-base font-light leading-relaxed">
+            Access a network of qualified professionals, check their profiles and reviews,
+            and book your appointment with ease.
+          </p>
+
+          <div className="flex items-center gap-4">
+            <img className="w-24 md:w-32" src={assets.group_profiles} alt="Doctors" />
+            <span className="text-sm md:text-base font-light">
+              10k+ verified doctors across 20+ specialities
+            </span>
+          </div>
+
+          <a
+            href="#speciality"
+            className="bg-white text-blue-600 hover:bg-gray-100 transition-all duration-300 px-6 py-3 rounded-full text-sm font-semibold inline-flex items-center gap-2 w-max"
+          >
+            Book Appointment <FiArrowRight />
+          </a>
         </div>
 
-        {/* ---------right side-------------- */}
-        <div className='md:w-1/2 relative '>  
-            <img className='w-full md:absolute bottom-0 h-auto rounded-lg' src={assets.header_img} alt="" />
+        {/* Right Side */}
+        <div className="flex-1 flex justify-center">
+          <div className="shadow-xl overflow-hidden p-4 md:p-6 w-full max-w-md">
+            <img
+              src={assets.header_img}
+              alt="Doctor Illustration"
+              className="w-full h-auto object-cover"
+            />
+          </div>
         </div>
-
-    </div>
+      </div>
+    </header>
   )
 }
 

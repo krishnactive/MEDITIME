@@ -9,6 +9,9 @@ export default {
       colors: {
         primary: "#5f6fff", // Your custom primary color
       },
+      gridTemplateColumns: {
+        'auto':'repeat(auto-fill, minmax(200px, 1fr))'
+      }
     },
   },
   plugins: [],
