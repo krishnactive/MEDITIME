@@ -1,4 +1,4 @@
-import appointment_img from './appointment_img.png'
+import appointment_img from './appointment_img_1.png'
 import header_img from './header_img_1.png'
 import group_profiles from './group_profiles.png'
 import profile_pic from './profile_pic_1.png'

@@ -27,7 +27,7 @@ const Header = () => {
 
           <a
             href="#speciality"
-            className="bg-white text-blue-600 hover:bg-gray-100 transition-all duration-300 px-6 py-3 rounded-full text-sm font-semibold inline-flex items-center gap-2 w-max"
+            className="bg-white text-blue-600 hover:bg-gray-100 hover:scale-105 transition-all duration-300 px-6 py-3 rounded-full text-sm font-semibold inline-flex items-center gap-2 w-max"
           >
             Book Appointment <FiArrowRight />
           </a>
