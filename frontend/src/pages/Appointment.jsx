@@ -8,6 +8,7 @@ import { SlCalender } from "react-icons/sl";
 import { FcAlarmClock } from "react-icons/fc";
 import { GrCheckboxSelected } from "react-icons/gr";
 import { MdBorderColor } from "react-icons/md";
+import RelatedDoctors from '../components/RelatedDoctors';
 
 const Appointment = () => {
 
@@ -236,8 +237,9 @@ const Appointment = () => {
         </button>
       </div>
     </div>
-  
-
+            
+     {/* Listing related doctors */}
+      <RelatedDoctors docId={docId} speciality={docInfo.speciality} />
 
     </div>
   )
