@@ -5,7 +5,8 @@ import { doctors } from "../assets/assets";
 
 const AppContextProvider = (props) => {
     const value = {
-        doctors
+        doctors,
+         currencySymbol: "₹", // Define currency symbol globally
     }
     return (
         <AppContext.Provider value={value}>
