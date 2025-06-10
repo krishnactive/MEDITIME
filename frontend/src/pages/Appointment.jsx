@@ -107,7 +107,7 @@ const Appointment = () => {
 
       currentDate.setMinutes(currentDate.getMinutes() + 30);
     }
-
+    if(timeSlots.length>0)
     allSlots.push(timeSlots);
   }
 
