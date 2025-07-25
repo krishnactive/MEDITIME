@@ -1,1 +1,6 @@
-@import "tailwindcss";
+@import "tailwindcss";  
+
+.primary2 {
+  background-color: #4F46E5; /* your primary color */
+  /* color: white; */
+}
