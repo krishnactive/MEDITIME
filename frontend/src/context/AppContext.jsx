@@ -9,11 +9,8 @@ const AppContextProvider = (props) => {
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const [doctors, setDoctors] = useState([]);
+    const [token, setToken] = useState(localStorage.getItem("token") || null);
 
-    const value = {
-        doctors,
-         currencySymbol: "₹", // Define currency symbol globally
-    }
 
     // Function to fetch doctors from backend
     const getDoctorsData = async () => {
@@ -29,6 +26,16 @@ const AppContextProvider = (props) => {
             toast.error(error.message || "Failed to fetch doctors data");
         }
     }
+
+    const value = {
+        doctors,
+         currencySymbol: "₹", // Define currency symbol globally
+         token,
+        setToken,
+        backendUrl,
+    }
+
+
     useEffect(() => {
         getDoctorsData();
     }, []);

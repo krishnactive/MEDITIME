@@ -10,8 +10,9 @@ const authUser = async (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded user ID:', decoded.id);
 
-        req.body.userId = decoded.id;
+        req.userId = decoded.id; // ✅ attach to req.userId instead of req.body
         next();
     } catch (error) {
         console.error('AuthUser Middleware Error:', error);

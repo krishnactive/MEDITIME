@@ -3,12 +3,26 @@ import { assets } from '../assets/assets';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { IoIosArrowDown } from 'react-icons/io';
 import { HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
+import { useContext } from 'react';
+import { AppContext } from '../context/AppContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
     const [showMenu, setShowMenu] = useState(false);
-    const [token, setToken] = useState(true);
+    // const [token, setToken] = useState(true);
     const [mobileNav, setMobileNav] = useState(false);
+    const {token, setToken} = useContext(AppContext);
+
+    const handleLogout = () => {
+        setToken(false); 
+        localStorage.removeItem('token');
+        setShowMenu(false);
+        // toast.success('Logged out successfully!');
+        scrollTo(0, 0);
+        // Redirect to login page
+        navigate('/login');
+    }
+
 
     return (
         <div className='flex items-center justify-between text-sm py-5 px-6 mb-5 border-b border-b-gray-200 shadow-sm bg-white/80 backdrop-blur-md sticky top-0 z-50'>
@@ -94,10 +108,7 @@ const Navbar = () => {
                                 My Appointments
                             </p>
                             <p
-                                onClick={() => {
-                                    setToken(false);
-                                    setShowMenu(false);
-                                }}
+                                onClick={handleLogout}
                                 className='hover:text-primary cursor-pointer py-2 transition-colors duration-200'
                             >
                                 Logout
