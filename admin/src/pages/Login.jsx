@@ -27,6 +27,7 @@ const Login = () => {
 
       if (data.success) {
         const token = data.token;
+        console.log(token);
         if (role === 'Admin') {
           setAToken(token);
           localStorage.setItem('aToken', token);
@@ -60,7 +61,7 @@ const Login = () => {
 
       <div className="flex flex-col gap-4 p-8 w-[340px] sm:w-96 border rounded-xl shadow-lg text-gray-700">
         <h2 className="text-2xl font-semibold text-center">
-          <span className="text-[#84CC16]">{role}</span> Login
+          <span className="text-primary">{role}</span> Login
         </h2>
 
         <div className="w-full">
@@ -88,16 +89,16 @@ const Login = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 rounded-md text-base text-white bg-[#84CC16] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`w-full py-2 rounded-md text-base text-white bg-primary ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
 
         <p className="text-sm text-center">
           {role === 'Admin' ? (
-            <>Doctor Login? <span onClick={toggleRole} className="text-[#84CC16] underline cursor-pointer">Click here</span></>
+            <>Doctor Login? <span onClick={toggleRole} className="text-primary underline cursor-pointer">Click here</span></>
           ) : (
-            <>Admin Login? <span onClick={toggleRole} className="text-[#84CC16] underline cursor-pointer">Click here</span></>
+            <>Admin Login? <span onClick={toggleRole} className="text-primary underline cursor-pointer">Click here</span></>
           )}
         </p>
       </div>

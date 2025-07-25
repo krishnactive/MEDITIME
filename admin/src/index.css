@@ -1,6 +1,11 @@
 @import "tailwindcss";  
 
-.primary2 {
-  background-color: #4F46E5; /* your primary color */
-  /* color: white; */
+@layer utilities {
+  .bg-primary {
+    background-color: #84CC16;
+  }
+
+  .text-primary {
+    color: #39c919;
+  }
 }
