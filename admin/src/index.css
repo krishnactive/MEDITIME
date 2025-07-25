@@ -6,6 +6,10 @@
   }
 
   .text-primary {
-    color: #39c919;
+    color: #acff99;
   }
+}
+
+::-webkit-scrollbar {
+  @apply hidden;
 }

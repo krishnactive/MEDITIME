@@ -7,7 +7,7 @@ export const AdminContext = createContext();
 const AdminContextProvider = ({ children }) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const [aToken, setAToken] = useState(localStorage.getItem('aToken') || '');
+  const [aToken, setAToken] = useState(localStorage.getItem('aToken') ? localStorage.getItem('aToken') : '')
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [dashData, setDashData] = useState(null);
