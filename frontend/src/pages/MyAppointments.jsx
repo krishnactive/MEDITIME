@@ -62,6 +62,7 @@ const MyAppointments = () => {
         }
     }
     const initPayment = (order) => {
+        // console.log("Razorpay Key:", import.meta.env.VITE_RAZORPAY_KEY_ID);
         const options = {
             key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
             amount: order.amount,
@@ -83,8 +84,10 @@ const MyAppointments = () => {
         try {
             const {data} = await axios.post(`${backendUrl}/api/user/payment-razorpay`, { appointmentId },{headers: { token }});
             if(data.success){
-                // console.log("Razorpay payment data:", data.order);
+                console.log("Razorpay payment data:", data.order);
                 initPayment(data.order);
+            } else{
+                toast.error(data.message || "Failed to initiate payment");
             }
         } catch (error) {
             console.error("Error processing Razorpay payment:", error);
@@ -117,14 +120,14 @@ const MyAppointments = () => {
                         
                         <div className='flex flex-col gap-2 justify-end text-sm text-center'>
                             {!item.cancelled && !item.payment && !item.isCompleted && payment !== item._id && (
-                                <button onClick={() => appointmentRazorpay(item._id)} className='text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300'>Pay Online</button>
+                                <button onClick={() => setPayment(item._id)} className='text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300'>Pay Online</button>
                             )}
                             {!item.cancelled && !item.payment && !item.isCompleted && payment === item._id && (
                                 <>
                                     <button className='text-stone-500 sm:min-w-48 py-2 border rounded hover:bg-gray-100 transition-all duration-300 flex items-center justify-center'>
                                         <img className='max-w-20 max-h-5' src={assets.stripe_logo} alt="" />
                                     </button>
-                                    <button className='text-stone-500 sm:min-w-48 py-2 border rounded hover:bg-gray-100 transition-all duration-300 flex items-center justify-center'>
+                                    <button onClick={() => appointmentRazorpay(item._id)} className='text-stone-500 sm:min-w-48 py-2 border rounded hover:bg-gray-100 transition-all duration-300 flex items-center justify-center'>
                                         <img className='max-w-20 max-h-5' src={assets.razorpay_logo} alt="" />
                                     </button>
                                 </>
