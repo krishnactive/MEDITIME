@@ -13,6 +13,7 @@ const authAdmin = async(req, res, next)=>{
         if(token_decode !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD){
             return res.json({success:false, message:"not authorized login"});
         }
+        // req.userId = token_decode.id;
         next();
     } catch (error) {
         console.log(error);

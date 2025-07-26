@@ -3,13 +3,14 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { DoctorContext } from '../context/DoctortContext';
 import { AdminContext } from '../context/AdminContext';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [role, setRole] = useState('Admin');       // 'Admin' or 'Doctor'
   const [email, setEmail] = useState('');         
   const [password, setPassword] = useState('');    
   const [loading, setLoading] = useState(false);   
-
+  const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const { setDToken } = useContext(DoctorContext);
@@ -31,9 +32,11 @@ const Login = () => {
         if (role === 'Admin') {
           setAToken(token);
           localStorage.setItem('aToken', token);
+          navigate('/admin-dashboard');
         } else {
           setDToken(token);
           localStorage.setItem('dToken', token);
+          navigate('/doctor-dashboard');
         }
         toast.success(`${role} login successful!`);
       } else {

@@ -29,9 +29,9 @@ const TopDoctors = () => {
             />
 
             <div className="p-4">
-              <div className="flex items-center gap-2 text-xs text-green-600 mb-1">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <p>Available</p>
+              <div className="flex items-center gap-2 text-xs mb-1">
+                <span className={`w-2 h-2 ${doc.available ? 'bg-green-500': 'bg-gray-500'} rounded-full animate-pulse`}></span>
+                <p  className={`${doc.available ? 'text-green-500': 'text-gray-500'}`}> Available</p>
               </div>
               <h3 className="text-lg font-semibold text-gray-900">{doc.name}</h3>
               <p className="text-sm text-gray-600">{doc.speciality}</p>

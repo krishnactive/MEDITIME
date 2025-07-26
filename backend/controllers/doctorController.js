@@ -86,7 +86,7 @@ const doctorList = async (req, res) => {
 // Toggle doctor's availability
 const changeAvailablity = async (req, res) => {
   try {
-    const  docId  = req.docId;
+    const  docId  = req.body.docId;
     const doctor = await doctorModel.findById(docId);
     if (!doctor) return res.json({ success: false, message: "Doctor not found" });
 
