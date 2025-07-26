@@ -11,7 +11,7 @@ const Navbar = () => {
     const [showMenu, setShowMenu] = useState(false);
     // const [token, setToken] = useState(true);
     const [mobileNav, setMobileNav] = useState(false);
-    const {token, setToken} = useContext(AppContext);
+    const {token, setToken, userData} = useContext(AppContext);
 
     const handleLogout = () => {
         setToken(false); 
@@ -65,12 +65,12 @@ const Navbar = () => {
             </ul>
 
             <div className='flex items-center gap-4'>
-                {!token ? (
+                {!token&&!userData ? (
                     <button
                         onClick={() => navigate('/login')}
                         className='bg-primary text-white px-4 py-2 text-sm md:px-8 md:py-3 md:text-base rounded-full font-medium shadow-md hover:shadow-lg transition-all duration-300'
                     >
-                        SignIn
+                        Register
                     </button>
                 ) : (
                     <div
@@ -79,7 +79,7 @@ const Navbar = () => {
                     >
                         <img
                             className='w-10 h-10 rounded-full border-2 border-primary shadow-md'
-                            src={assets.profile_pic}
+                            src={userData?.image||assets.profile_pic}
                             alt=""
                         />
                         <IoIosArrowDown className={`w-4 h-4 transition-transform duration-300 ${showMenu ? 'rotate-180' : ''}`} />

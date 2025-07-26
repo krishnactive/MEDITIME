@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import { FaInfoCircle, FaRupeeSign } from 'react-icons/fa';
 import { assets } from '../assets/assets';
@@ -9,14 +9,17 @@ import { FcAlarmClock } from "react-icons/fc";
 import { GrCheckboxSelected } from "react-icons/gr";
 import { MdBorderColor } from "react-icons/md";
 import RelatedDoctors from '../components/RelatedDoctors';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const Appointment = () => {
 
   const {docId} = useParams()
-  const {doctors, currencySymbol} = useContext(AppContext);
+  const {doctors, currencySymbol, backendUrl, token, getDoctorsData} = useContext(AppContext);
   
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
+  const naviagte = useNavigate();
 
   const [docInfo, setDocInfo] = useState(null);
   const [docSlots, setDocSlots] = useState([]);
@@ -100,10 +103,21 @@ const Appointment = () => {
         hour12: true,
       });
 
-      timeSlots.push({
-        Datetime: new Date(currentDate),
-        time: formattedTime,
-      });
+      let day = currentDate.getDate();
+      let month = currentDate.getMonth() + 1; // Months are 0-indexed
+      let year = currentDate.getFullYear();
+
+      const dateKey = `${day}_${month}_${year}`;
+      const timeKey = formattedTime; // already formatted string
+
+      const isSlotBooked = docInfo?.slots_booked?.[dateKey]?.includes(timeKey);
+
+      if (!isSlotBooked) {
+        timeSlots.push({
+          Datetime: new Date(currentDate),
+          time: formattedTime,
+        });
+      }
 
       currentDate.setMinutes(currentDate.getMinutes() + 30);
     }
@@ -113,6 +127,50 @@ const Appointment = () => {
 
   setDocSlots(allSlots); // Single update
 };
+
+
+
+
+  // Fetch doctor info based on docId and get available slots
+  // This will run when the component mounts and when docId changes
+  const bookAppointment = async () => {
+    if (!token) {
+      toast.warning('Please login to book an appointment');
+      return naviagte('/login');
+    }
+
+    if (!selectedSlot || selectedDateIndex === null) {
+      toast.error('Please select a date and time slot');
+      return;
+    }
+
+    // Format slotDate like: day_month_year
+    const dateObj = selectedSlot.Datetime;
+    const day = dateObj.getDate();
+    const month = dateObj.getMonth() + 1;
+    const year = dateObj.getFullYear();
+    const slotDate = `${day}_${month}_${year}`;
+    const slotTime = selectedSlot.time;
+    // console.log('Booking appointment for:', docId, slotDate, slotTime);
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/book-appointment`,
+        { docId, slotDate, slotTime },
+        { headers: { token } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getDoctorsData();
+        naviagte('/my-appointments');
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || 'Something went wrong');
+    }
+  };
 
 
   useEffect(()=>{
@@ -227,7 +285,7 @@ const Appointment = () => {
         )}
         <button
           disabled={!selectedSlot}
-          onClick={() => alert(`Slot booked for ${selectedSlot.Datetime.toLocaleString()}`)}
+          onClick={bookAppointment}
           className={`px-6 py-2 rounded-full text-white font-semibold text-sm w-full sm:w-auto transition duration-300
             ${selectedSlot
               ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:opacity-90"

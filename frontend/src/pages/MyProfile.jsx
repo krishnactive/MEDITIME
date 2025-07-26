@@ -1,11 +1,47 @@
 import React, { useContext, useState } from 'react'
 import { AppContext } from '../context/AppContext'
+import {assets} from '../assets/assets'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const MyProfile = () => {
   const [isEdit, setIsEdit] = useState(false)
   const [image, setImage] = useState(false)
 
-  const { userData, setUserData } = useContext(AppContext)
+  const { userData, setUserData, token, backendUrl, loadUserProfileData} = useContext(AppContext);
+
+  const handleUpdateProfile = async () => {
+      try {
+        const formData = new FormData();
+        formData.append('name', userData.name);
+        formData.append('phone', userData.phone);
+        formData.append('address', JSON.stringify(userData.address));
+        formData.append('dob', userData.dob);
+        formData.append('gender', userData.gender);
+        if (image) {
+          formData.append('image', image);
+        }
+        
+        const {data} = await axios.post(`${backendUrl}/api/user/update-profile`, formData, {
+          headers: {
+            token
+          }
+        });
+
+        if(data.success) {
+          toast.success(data.message || "Profile updated successfully");
+          setImage(false);
+          setIsEdit(false);
+          await loadUserProfileData(); // Reload user data after update
+        } else{
+          toast.error(data.message || "Failed to update profile");
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        toast.error(error.message || "Failed to update profile");
+        
+      }
+  }
 
   return userData ? (
     <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-3xl p-8 text-sm text-[#333]">
@@ -41,7 +77,7 @@ const MyProfile = () => {
           <input
             type="text"
             className="text-center bg-gray-100 text-2xl font-semibold rounded-md p-2 w-60 focus:outline-none"
-            value={userData.name}
+            value={userData?.name||''}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, name: e.target.value }))
             }
@@ -68,7 +104,7 @@ const MyProfile = () => {
               <input
                 className="bg-gray-100 rounded-md p-1 w-48"
                 type="text"
-                value={userData.phone}
+                value={userData?.phone || ''}
                 onChange={(e) =>
                   setUserData((prev) => ({ ...prev, phone: e.target.value }))
                 }
@@ -84,7 +120,7 @@ const MyProfile = () => {
                 <input
                   className="bg-gray-100 rounded-md p-1 w-64"
                   type="text"
-                  value={userData.address.line1}
+                  value={userData?.address?.line1 || ''}
                   onChange={(e) =>
                     setUserData((prev) => ({
                       ...prev,
@@ -95,7 +131,7 @@ const MyProfile = () => {
                 <input
                   className="bg-gray-100 rounded-md p-1 w-64"
                   type="text"
-                  value={userData.address.line2}
+                  value={userData?.address?.line2||''}
                   onChange={(e) =>
                     setUserData((prev) => ({
                       ...prev,
@@ -127,7 +163,7 @@ const MyProfile = () => {
             {isEdit ? (
               <select
                 className="bg-gray-100 rounded-md p-1"
-                value={userData.gender}
+                value={userData?.gender||''}
                 onChange={(e) =>
                   setUserData((prev) => ({
                     ...prev,
@@ -150,7 +186,7 @@ const MyProfile = () => {
               <input
                 className="bg-gray-100 rounded-md p-1"
                 type="date"
-                value={userData.dob}
+                value={userData?.dob||''}
                 onChange={(e) =>
                   setUserData((prev) => ({ ...prev, dob: e.target.value }))
                 }
@@ -165,7 +201,7 @@ const MyProfile = () => {
       <div className="mt-8 flex justify-center">
         {isEdit ? (
           <button
-            onClick={() => setIsEdit(false)}
+            onClick={handleUpdateProfile}
             className="bg-primary text-white px-6 py-2 rounded-full shadow hover:bg-primary/90 transition"
           >
             Save
