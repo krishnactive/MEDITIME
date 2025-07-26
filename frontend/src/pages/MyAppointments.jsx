@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 
 const MyAppointments = () => {
 
-    const {backendUrl, token} = useContext(AppContext);
+    const {backendUrl, token, getDoctorData} = useContext(AppContext);
     // const { appointments = [] } = useContext(AppContext) // fallback empty list
     const [payment, setPayment] = useState('')
     const [appointments, setAppointments] = useState([])
@@ -51,6 +51,7 @@ const MyAppointments = () => {
             if (data.success) {
                 toast.success(data.message);
                 fetchAppointments(); // Refresh appointments after cancellation
+                getDoctorData(); // Refresh doctor data
             } else {
                 toast.error(data.message);
             }
