@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   return (
     <div className="m-5 space-y-8">
-<h1>fasdfasdfas</h1>
+{/* <h1>fasdfasdfas</h1> */}
       {/* Stats cards */}
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-3 bg-white p-4 min-w-52 rounded border-2 border-gray-100 hover:scale-105 transition">
