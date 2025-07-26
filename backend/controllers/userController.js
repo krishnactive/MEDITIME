@@ -200,5 +200,36 @@ const listAppointments = async (req, res) => {
     }
 }
     
+//api to cancel appointment
+const cancelAppointment = async (req, res) => {
+    try {
+        const { appointmentId } = req.body;
+        console.log("Cancel appointment ID:", appointmentId);
+        const userId = req.userId;
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointments };
+        const appointment = await appointmentModel.findById(appointmentId);
+        if(appointment.userId.toString() !== userId) {
+            return res.json({ success: false, message: 'You can only cancel your own appointments' });
+        }
+        if (!appointment) {
+            return res.json({ success: false, message: 'Appointment not found' });
+        }
+        await appointmentModel.findByIdAndUpdate(appointmentId, {cancelled: true});
+        // Update doctor's slots
+        const { docId, slotDate, slotTime } = appointment;
+        const doctor = await doctorModel.findById(docId);
+        if (doctor) {
+            if (doctor.slots_booked[slotDate]) {
+                doctor.slots_booked[slotDate] = doctor.slots_booked[slotDate].filter(slot => slot !== slotTime);
+                await doctor.save();
+            }
+        }
+        res.json({ success: true, message: 'Appointment cancelled successfully' });
+
+    }catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointments, cancelAppointment };

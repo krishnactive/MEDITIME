@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import { assets } from '../assets/assets'
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const MyAppointments = () => {
 
@@ -40,6 +41,23 @@ const MyAppointments = () => {
     const slotDateFormat = (slotDate) => {
         const dateArray = slotDate.split('_')
         return dateArray[0] + " " + months[Number(dateArray[1])] + " " + dateArray[2]
+    }
+    const cancelAppointment = async (appointmentId) => {
+        try {
+            const {data} = await axios.post(`${backendUrl}/api/user/cancel-appointment`, { appointmentId }, {
+                headers: { token }
+            });
+            console.log("Cancel appointment response:", appointmentId);
+            if (data.success) {
+                toast.success(data.message);
+                fetchAppointments(); // Refresh appointments after cancellation
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.error("Error cancelling appointment:", error);
+            toast.error(error.response?.data?.message || "Failed to cancel appointment");
+        }
     }
 
     return (
@@ -84,10 +102,10 @@ const MyAppointments = () => {
                                 <button className='sm:min-w-48 py-2 border border-green-500 rounded text-green-500'>Completed</button>
                             )}
                             {!item.cancelled && !item.isCompleted && (
-                                <button className='text-stone-500 sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300'>Cancel appointment</button>
+                                <button onClick={()=>cancelAppointment(item._id)} className='text-stone-500 sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300'>Cancel appointment</button>
                             )}
                             {item.cancelled && !item.isCompleted && (
-                                <button className='sm:min-w-48 py-2 border border-red-500 rounded text-red-500'>Appointment cancelled</button>
+                                <button  className='sm:min-w-48 py-2 border border-red-500 rounded text-red-500'>Appointment cancelled</button>
                             )}
                         </div>
                     </div> 
