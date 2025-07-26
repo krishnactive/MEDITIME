@@ -25,7 +25,7 @@ const loginDoctor = async (req, res) => {
 // Get appointments for doctor
 const appointmentsDoctor = async (req, res) => {
   try {
-    const { docId } = req.body;
+    const  docId  = req.docId;
     const appointments = await appointmentModel.find({ docId });
     res.json({ success: true, appointments });
   } catch (error) {
@@ -37,7 +37,8 @@ const appointmentsDoctor = async (req, res) => {
 // Cancel appointment
 const appointmentCancel = async (req, res) => {
   try {
-    const { docId, appointmentId } = req.body;
+    const  docId  = req.docId;
+    const { appointmentId } = req.body;
 
     const appointment = await appointmentModel.findById(appointmentId);
     if (appointment && appointment.docId === docId) {
@@ -55,7 +56,8 @@ const appointmentCancel = async (req, res) => {
 // Mark appointment as completed
 const appointmentComplete = async (req, res) => {
   try {
-    const { docId, appointmentId } = req.body;
+    const  docId  = req.docId;
+    const { appointmentId } = req.body;
 
     const appointment = await appointmentModel.findById(appointmentId);
     if (appointment && appointment.docId === docId) {
@@ -84,7 +86,7 @@ const doctorList = async (req, res) => {
 // Toggle doctor's availability
 const changeAvailablity = async (req, res) => {
   try {
-    const { docId } = req.body;
+    const  docId  = req.docId;
     const doctor = await doctorModel.findById(docId);
     if (!doctor) return res.json({ success: false, message: "Doctor not found" });
 
@@ -99,7 +101,7 @@ const changeAvailablity = async (req, res) => {
 // Get doctor's profile
 const doctorProfile = async (req, res) => {
   try {
-    const { docId } = req.body;
+    const  docId  = req.docId;
     const profileData = await doctorModel.findById(docId).select("-password");
     res.json({ success: true, profileData });
   } catch (error) {
@@ -111,7 +113,8 @@ const doctorProfile = async (req, res) => {
 // Update doctor's profile
 const updateDoctorProfile = async (req, res) => {
   try {
-    const { docId, fees, address, available } = req.body;
+    const docId = req.docId; // Use req.docId set by authDoctor middleware
+    const {  fees, address, available } = req.body;
     await doctorModel.findByIdAndUpdate(docId, { fees, address, available });
     res.json({ success: true, message: "Profile Updated" });
   } catch (error) {
@@ -123,7 +126,7 @@ const updateDoctorProfile = async (req, res) => {
 // Dashboard data for doctor panel
 const doctorDashboard = async (req, res) => {
   try {
-    const { docId } = req.body;
+    const  docId  = req.docId;
     const appointments = await appointmentModel.find({ docId });
 
     let earnings = 0;
