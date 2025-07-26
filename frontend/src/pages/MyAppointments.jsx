@@ -3,14 +3,17 @@ import { AppContext } from '../context/AppContext'
 import { assets } from '../assets/assets'
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import {useNavigate} from 'react-router-dom';
 
 const MyAppointments = () => {
 
-    const {backendUrl, token, getDoctorData} = useContext(AppContext);
+    const {backendUrl, token, getDoctorsData} = useContext(AppContext);
     // const { appointments = [] } = useContext(AppContext) // fallback empty list
     const [payment, setPayment] = useState('')
     const [appointments, setAppointments] = useState([])
     
+    const navigate = useNavigate()
+
     const fetchAppointments = async () => {
         try {
 
@@ -38,6 +41,7 @@ const MyAppointments = () => {
 
     const months = ["","Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+
     // Format date from slotDate (e.g., 20_01_2000 => 20 Jan 2000)
     const slotDateFormat = (slotDate) => {
         const dateArray = slotDate.split('_')
@@ -48,12 +52,13 @@ const MyAppointments = () => {
             const {data} = await axios.post(`${backendUrl}/api/user/cancel-appointment`, { appointmentId }, {
                 headers: { token }
             });
-            console.log("Cancel appointment response:", appointmentId);
+            // console.log("Cancel appointment response:", appointmentId);
             if (data.success) {
                 toast.success(data.message);
                 fetchAppointments(); // Refresh appointments after cancellation
-                getDoctorData(); // Refresh doctor data
-            } else {
+                getDoctorsData(); // Refresh doctor data
+            } 
+            else {
                 toast.error(data.message);
             }
         } catch (error) {
@@ -72,7 +77,19 @@ const MyAppointments = () => {
             order_id: order.id,
             receipt: order.receipt,
             handler: async (response) => {
-                console.log("Payment response:", response);
+                // console.log("Payment response:", response);
+                try {
+                    const {data} = await axios.post(`${backendUrl}/api/user/verifyRazorpay`, response, {headers:{token}});
+
+                    if(data.success){
+                        fetchAppointments();
+                        navigate('/my-appointments')
+                    }
+
+                } catch (error) {
+                        console.log(error);
+                        toast.error(error.message);
+                }
             }
         }
         const razorpay = new window.Razorpay(options);
