@@ -6,7 +6,7 @@ const AppContextProvider = ({ children }) => {
   const currency = import.meta.env.VITE_CURRENCY || "₹";
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  const months = ["","Jan", "Feb", "Mar", "Apr", "May", "Jun",
                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const slotDateFormat = (slotDate) => {

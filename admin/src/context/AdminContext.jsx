@@ -60,7 +60,7 @@ const AdminContextProvider = ({ children }) => {
   const getAllAppointments = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${backendUrl}/api/admin/appointments`, {
+      const { data } = await axios.get(`${backendUrl}/api/admin/all-appointments`, {
         headers: { aToken }
       });
       if (data.success) {

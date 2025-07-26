@@ -26,7 +26,7 @@ const App = () => {
       <div className="bg-[#F8F9FD] min-h-screen flex flex-col">
         <ToastContainer />
         <Navbar />
-        <div className="flex flex-1">
+        <div className="flex flex-1 ">
           <Sidebar />
           <main className="flex-1 p-4">
             <Routes>

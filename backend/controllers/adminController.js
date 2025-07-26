@@ -5,6 +5,7 @@ import {v2 as cloudinary} from "cloudinary"
 import jwt from 'jsonwebtoken'
 
 import doctorModel from "../models/doctorModel.js"
+import appointmentModel from "../models/appointmentModel.js"
 //apis for adding doctor
 const addDoctor = async (req,res) => {
     try {
@@ -90,6 +91,49 @@ const allDoctors = async(req, res)=>{
     }
 }
 
+//api to get all appointments for admin panel
+const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await appointmentModel.find({}).populate('userData').populate('docData').sort({ createdAt: -1 });
+    res.json({ success: true, appointments });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// cancel appointment
+const appointmentCancel = async (req, res) => {
+    try {
+        const { appointmentId } = req.body;
+        // console.log("Cancel appointment ID:", appointmentId);
+        // const userId = req.userId;
+
+        const appointment = await appointmentModel.findById(appointmentId);
+        // if(appointment.userId.toString() !== userId) {
+        //     return res.json({ success: false, message: 'You can only cancel your own appointments' });
+        // }
+        if (!appointment) {
+            return res.json({ success: false, message: 'Appointment not found' });
+        }
+        await appointmentModel.findByIdAndUpdate(appointmentId, {cancelled: true});
+        // Update doctor's slots
+        const { docId, slotDate, slotTime } = appointment;
+        const doctor = await doctorModel.findById(docId);
+        if (doctor) {
+            if (doctor.slots_booked[slotDate]) {
+                doctor.slots_booked[slotDate] = doctor.slots_booked[slotDate].filter(slot => slot !== slotTime);
+                await doctor.save();
+            }
+        }
+        res.json({ success: true, message: 'Appointment cancelled successfully' });
+
+    }catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
 
 
-export {addDoctor, loginAdmin, allDoctors}
+
+export {addDoctor, loginAdmin, allDoctors, getAllAppointments, appointmentCancel};
