@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken'
 
 import doctorModel from "../models/doctorModel.js"
 import appointmentModel from "../models/appointmentModel.js"
+import userModel from "../models/userModel.js"
 //apis for adding doctor
 const addDoctor = async (req,res) => {
     try {
@@ -134,6 +135,35 @@ const appointmentCancel = async (req, res) => {
     }
 }
 
+// API to get dashboard statistics for admin panel
+
+const adminDashboardStats = async (req, res) => {
+  try {
+    // const totalDoctors = await doctorModel.countDocuments();
+    // const totalAppointments = await appointmentModel.countDocuments();
+    // const totalCancelledAppointments = await appointmentModel.countDocuments({ cancelled: true });
+    const doctors = await doctorModel.find({});
+    const users = await userModel.find({});
+    const appointments = await appointmentModel.find({});
+
+    const dashData = {
+        doctors: doctors.length,
+        patients: users.length,
+        appointments: appointments.length,
+        latestAppointments: appointments.slice(-5).reverse(),
+        cancelledAppointments: appointments.filter(app => app.cancelled).length,
+    }
+    
+    res.json({
+      success: true,
+      dashData
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
 
-export {addDoctor, loginAdmin, allDoctors, getAllAppointments, appointmentCancel};
+
+export {addDoctor, loginAdmin, allDoctors, getAllAppointments, appointmentCancel, adminDashboardStats};
