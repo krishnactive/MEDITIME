@@ -14,7 +14,7 @@ const Sidebar = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-white border-r text-gray-700 mt-0 ">
+    <div className="min-h-screen bg-white border-r border-gray-300 last:border-none text-gray-700 mt-0 ">
       {aToken && (
         <ul>
           <NavLink to="/admin-dashboard" className={linkClasses}>
