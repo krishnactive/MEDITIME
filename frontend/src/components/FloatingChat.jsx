@@ -7,7 +7,7 @@ import { AppContext } from '../context/AppContext';
 
 const DrAIChat = () => {
   const { userData } = useContext(AppContext); 
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
@@ -63,7 +63,7 @@ Allergies: ${updatedAnswers.allergies}
       `;
 
       try {
-        const response = await axios.post('http://localhost:4000/api/ai/ask', {
+        const response = await axios.post(`${backendUrl}/api/ai/ask`, {
           messages: [
             { from: 'user', text: `Act as a doctor. Based on this info, generate a prescription:\n${summary}` }
           ]
