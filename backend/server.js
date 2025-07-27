@@ -6,7 +6,7 @@ import connectCloudinary from './config/cloudinary.js';
 import adminRouter from './routes/adminRoutes.js';
 import doctorRouter from './routes/doctorRoutes.js';
 import userRouter from './routes/userRoutes.js';
-
+import aiRoutes from './routes/aiRoutes.js';
 
 // app config
 const app = express();
@@ -24,6 +24,9 @@ app.use('/api/admin', adminRouter);
 app.use('/api/doctor', doctorRouter);
 app.use('/api/user', userRouter);
 //localhost:4000/api/admin/add-doctor
+
+// AI routes
+app.use('/api/ai', aiRoutes);
 
 
 
