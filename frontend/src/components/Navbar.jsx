@@ -169,6 +169,13 @@ const Navbar = () => {
                         ALL DOCTORS
                     </NavLink>
                     <NavLink
+                        to='/know-reports'
+                        className={({ isActive }) => `py-1 ${isActive ? 'text-primary' : ''}`}
+                        onClick={() => setMobileNav(false)}
+                    >
+                        AI REPORTS
+                    </NavLink>
+                    <NavLink
                         to='/about'
                         className={({ isActive }) => `py-1 ${isActive ? 'text-primary' : ''}`}
                         onClick={() => setMobileNav(false)}

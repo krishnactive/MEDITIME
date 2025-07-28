@@ -1,6 +1,7 @@
 import React from 'react'
 import { assets } from '../assets/assets'
 import { Link, useLocation } from 'react-router-dom';
+import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
 
 const Footer = () => {
     const location = useLocation();
@@ -39,14 +40,51 @@ const Footer = () => {
             </div>
             {/* -------right section-------- */}
             <div>
-                <p className='text-xl font-medium mb-5'>GET IN TOUCH</p>
-                <ul className='flex flex-col gap-2 text-gray-600'>
-                    <li>1234567890</li>
-                    <li>codedone404@gmail.com</li>
-                </ul>
+          <p className="text-xl font-medium mb-5">GET IN TOUCH</p>
+          <ul className="flex flex-col gap-2 text-gray-600">
+            <li>1234567890</li>
+            <li>codedone404@gmail.com</li>
+            <div className='flex gap-2'>
 
-            </div>
+          
+            <li className="flex items-center gap-2">
+              
+              <a
+                href="https://github.com/krishnactive"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-primary transition-colors"
+              >
+               <FaGithub className="text-xl" /> 
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              
+              <a
+                href="https://www.linkedin.com/in/krishna-kant-sharma-a64955230/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-primary transition-colors"
+              >
+                <FaLinkedin className="text-xl" />
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              
+              <a
+                href="https://x.com/_krishna_kk?t=UvW1-TrlUS3iYFCC50FR8Q&s=09"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-primary transition-colors"
+              >
+                <FaXTwitter className="text-xl" />
+              </a>
+            </li>
+              </div>
+          </ul>
         </div>
+      </div>
+      
         {/* -------copy right-------- */}
         <div>
             <hr />

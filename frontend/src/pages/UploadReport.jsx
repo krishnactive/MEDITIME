@@ -4,22 +4,22 @@ import ReportDetails from '../components/ReportDetails';
 import { FaCloudUploadAlt, FaPlus } from 'react-icons/fa';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 
 const UploadReport = () => {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState(null);
-  const { userData, token } = useContext(AppContext);
-  const navigate = useNavigate();
+  const { token } = useContext(AppContext);
+  // const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!userData) {
-      navigate('/login');
-      toast.error('Please log in to upload reports.');
-    }
-  }, [userData, navigate]);
+  // useEffect(() => {
+  // //   if (!userData) {
+  // //     navigate('/login');
+  // //     toast.error('Please log in to upload reports.');
+  // //   }
+  // // }, [userData, navigate]);
 
   const handleAddPhoto = () => {
     if (files.length >= 5) {
