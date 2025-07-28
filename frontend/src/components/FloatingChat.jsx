@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
 import { FaComments, FaUserMd, FaDownload } from 'react-icons/fa';
 import jsPDF from 'jspdf';
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast'; 
+import { toast } from 'react-toastify';
 import { AppContext } from '../context/AppContext';
 
 const DrAIChat = () => {
-  const { userData } = useContext(AppContext); 
+  const { userData } = useContext(AppContext);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
@@ -18,7 +20,8 @@ const DrAIChat = () => {
     allergies: '',
   });
   const [messages, setMessages] = useState([
-    { from: 'ai', text: "Hello! I'm Dr.AI. Let's create your health report." }
+    { from: 'ai', text: "Hello! I'm Dr.AI. Let's create your health report." },
+    { from: 'ai', text: "What symptoms are you experiencing?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,16 +46,27 @@ const DrAIChat = () => {
     const currentStep = questions[step];
     const updatedAnswers = { ...answers, [currentStep.key]: input };
 
-    const newMessages = [...messages, { from: 'user', text: input }];
+    const newMessages = [
+      ...messages,
+      { from: 'user', text: input }
+    ];
+
     setAnswers(updatedAnswers);
     setInput('');
 
     if (step < questions.length - 1) {
-      setStep(step + 1);
-      setMessages([...newMessages, { from: 'ai', text: questions[step + 1].question }]);
+      const nextStep = step + 1;
+      setStep(nextStep);
+      setMessages([
+        ...newMessages,
+        { from: 'ai', text: questions[nextStep].question }
+      ]);
     } else {
-      setMessages([...newMessages, { from: 'ai', text: "Generating your prescription..." }]);
       setIsLoading(true);
+      setMessages([
+        ...newMessages,
+        { from: 'ai', text: "Generating your prescription..." }
+      ]);
 
       const summary = `
 Symptoms: ${updatedAnswers.symptoms}
@@ -72,13 +86,14 @@ Allergies: ${updatedAnswers.allergies}
         setMessages([
           ...newMessages,
           { from: 'ai', text: "Generating your prescription..." },
-          { from: 'ai', text: response.data.text },
+          { from: 'ai', text: response?.data?.text || response?.data?.answer || "Here's your prescription." },
           { from: 'ai', text: "Your report is ready! If you wish to generate another report, please click below to restart." }
         ]);
         setIsReportReady(true);
-        setStep(-1); // Prevent reuse
+        setStep(-1); // disable further input
       } catch (err) {
         console.error(err);
+        toast.error('Failed to generate prescription');
         setMessages([
           ...newMessages,
           { from: 'ai', text: "Sorry, something went wrong while generating your report." }
@@ -131,8 +146,7 @@ Allergies: ${updatedAnswers.allergies}
           <button
             onClick={() => {
               if (!userData) {
-                console.error("User not logged in");
-                alert("Please login first to use Dr.AI");
+                toast.error("Please login first to use Dr.AI");
                 return;
               }
               setIsOpen(true);
