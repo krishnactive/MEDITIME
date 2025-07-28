@@ -1,5 +1,5 @@
 import express from 'express';
-import { askAI, testAI } from '../controllers/aiController.js';
+import { askAI } from '../controllers/aiController.js';
 import authUser from "../middlewares/authUser.js";
 import rateLimit from 'express-rate-limit';
 
@@ -11,7 +11,7 @@ const aiLimiter = rateLimit({
   message: { text: "Too many AI requests, please slow down." }
 });
 
-router.post('/ask',aiLimiter, askAI);
-router.get('/test', testAI);
+router.post('/ask',authUser, aiLimiter, askAI);
+// router.get('/test', testAI);
 
 export default router;

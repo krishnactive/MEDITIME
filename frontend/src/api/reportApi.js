@@ -3,19 +3,16 @@ import { toast } from "react-toastify";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-export const uploadMedicalReport = async (file, token) => {
+export const uploadMedicalReport = async (files, token) => {
   const formData = new FormData();
-  formData.append("report", file);
+  files.forEach(file => formData.append("files", file)); // multiple files
 
   try {
     const { data } = await axios.post(
       `${backendUrl}/api/reports/upload`,
       formData,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          token: token, // pass user token if needed
-        },
+        headers: { token },
       }
     );
 
@@ -27,8 +24,7 @@ export const uploadMedicalReport = async (file, token) => {
     }
   } catch (error) {
     console.error("Error uploading medical report:", error);
-    toast.error(error.message || "Upload failed");
+    toast.error(error.response?.data?.message || "Upload failed");
     return null;
   }
 };
-    
