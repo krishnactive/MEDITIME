@@ -26,17 +26,17 @@ export const askAI = async (req, res) => {
 };
 
 // /api/ai/test
-export const testAI = async (req, res) => {
-  try {
-    const result = await model.generateContent({
-      contents: [
-        { role: 'user', parts: [{ text: "Say hello from Dr.AI test route!" }] }
-      ]
-    });
-    const response = await result.response.text();
-    res.json({ text: response });
-  } catch (err) {
-    console.error('Gemini AI test error:', err);
-    res.status(500).json({ text: "Test failed.", error: err.message });
-  }
-};
+// export const testAI = async (req, res) => {
+//   try {
+//     const result = await model.generateContent({
+//       contents: [
+//         { role: 'user', parts: [{ text: "Say hello from Dr.AI test route!" }] }
+//       ]
+//     });
+//     const response = await result.response.text();
+//     res.json({ text: response });
+//   } catch (err) {
+//     console.error('Gemini AI test error:', err);
+//     res.status(500).json({ text: "Test failed.", error: err.message });
+//   }
+// };

@@ -5,6 +5,8 @@ import { IoIosArrowDown } from 'react-icons/io';
 import { HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
 import { useContext } from 'react';
 import { AppContext } from '../context/AppContext';
+import { useRef } from 'react';
+import { useEffect } from 'react';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -12,6 +14,17 @@ const Navbar = () => {
     // const [token, setToken] = useState(true);
     const [mobileNav, setMobileNav] = useState(false);
     const {token, setToken, userData} = useContext(AppContext);
+    
+    const profileMenuRef = useRef();
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+        if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+            setShowMenu(false);
+        }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleLogout = () => {
         setToken(false); 
@@ -50,6 +63,12 @@ const Navbar = () => {
                         <span className='absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-3/5'></span>
                     </li>
                 </NavLink>
+                <NavLink to='/know-reports' className='group'>
+                    <li className='py-1 cursor-pointer relative'>
+                        AI REPORTS
+                        <span className='absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-3/5'></span>
+                    </li>
+                </NavLink>
                 <NavLink to='/about' className='group'>
                     <li className='py-1 cursor-pointer relative'>
                         ABOUT
@@ -73,14 +92,16 @@ const Navbar = () => {
                         Register
                     </button>
                 ) : (
-                    <div
-                        className='flex items-center gap-2 cursor-pointer group relative'
+                    <div 
+                        ref={profileMenuRef}
                         onClick={() => setShowMenu((prev) => !prev)}
+                        className='flex items-center gap-2 cursor-pointer group relative'
                     >
                         <img
                             className='w-10 h-10 rounded-full border-2 border-primary shadow-md'
                             src={userData?.image||assets.profile_pic}
-                            alt=""
+                            alt="Profile"
+                            
                         />
                         <IoIosArrowDown className={`w-4 h-4 transition-transform duration-300 ${showMenu ? 'rotate-180' : ''}`} />
 
