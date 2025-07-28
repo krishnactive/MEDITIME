@@ -57,7 +57,7 @@ const Contact = () => {
               <FaGithub />
             </a>
             <a
-              href="https://www.linkedin.com/in/krishnactive"
+              href="https://www.linkedin.com/in/krishna-kant-sharma-a64955230/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-700 hover:text-blue-600 transition-colors text-2xl"
@@ -66,7 +66,7 @@ const Contact = () => {
               <FaLinkedin />
             </a>
             <a
-              href="https://twitter.com/krishnactive"
+              href="https://x.com/_krishna_kk?t=UvW1-TrlUS3iYFCC50FR8Q&s=09"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-700 hover:text-blue-600 transition-colors text-2xl"
