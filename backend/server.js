@@ -7,7 +7,7 @@ import adminRouter from './routes/adminRoutes.js';
 import doctorRouter from './routes/doctorRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
-
+import reportRoutes from './routes/reportRoutes.js';
 // app config
 const app = express();
 const PORT = process.env.PORT||4000
@@ -27,6 +27,7 @@ app.use('/api/user', userRouter);
 
 // AI routes
 app.use('/api/ai', aiRoutes);
+app.use('/api/reports', reportRoutes);
 
 
 

@@ -50,6 +50,12 @@ const Navbar = () => {
                         <span className='absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-3/5'></span>
                     </li>
                 </NavLink>
+                <NavLink to='/know-reports' className='group'>
+                    <li className='py-1 cursor-pointer relative'>
+                        AI REPORTS
+                        <span className='absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-3/5'></span>
+                    </li>
+                </NavLink>
                 <NavLink to='/about' className='group'>
                     <li className='py-1 cursor-pointer relative'>
                         ABOUT

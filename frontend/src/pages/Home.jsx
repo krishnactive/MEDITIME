@@ -12,7 +12,7 @@ const Home = () => {
       <SpecialityMenu/>
       <TopDoctors/>
       <FloatingChat />
-      <UploadReport />
+      {/* <UploadReport /> */}
       <Banner/>
     </div>
   )
