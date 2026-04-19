@@ -252,109 +252,150 @@ const VideoCall = () => {
     }
   };
 
+  const peerKeys = Object.keys(peers);
+  const mainPeerKey = peerKeys[0];
+
   return (
-    <div className="video-call relative h-screen bg-gray-900 flex flex-col">
-      {/* Video Grid */}
-      <div className="flex-1 p-4">
-        <div className="video-grid grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-          <div className="relative">
-            <video
-              ref={userVideo}
-              autoPlay
-              muted
-              playsInline
-              className={`w-full h-full rounded-lg border-2 border-green-500 bg-black ${isScreenSharing ? 'object-contain' : 'object-cover'}`}
-            />
-            <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
-              You (Doctor)
+    <div className="video-call relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-black text-white max-md:fixed max-md:inset-0 max-md:z-[100] md:h-screen">
+      <div className="relative min-h-0 flex-1 w-full md:p-4">
+        <div className="absolute inset-0 md:static md:grid md:h-full md:min-h-[240px] md:grid-cols-2 md:gap-4 md:items-stretch">
+          {mainPeerKey ? (
+            <div className="absolute inset-0 z-0 md:relative md:z-auto md:order-2 md:min-h-0 md:overflow-hidden md:rounded-xl">
+              <RemoteVideo stream={peers[mainPeerKey]} label="Patient" fill />
+            </div>
+          ) : (
+            <div className="absolute inset-0 z-0 flex flex-col items-center justify-center gap-2 bg-neutral-950 px-6 text-center md:relative md:hidden">
+              <p className="text-base font-medium text-white/90">Connecting…</p>
+              <p className="text-sm text-white/50">Waiting for the patient to join</p>
+            </div>
+          )}
+
+          {peerKeys.slice(1).map((key) => (
+            <div key={key} className="hidden min-h-0 md:block md:overflow-hidden md:rounded-xl">
+              <RemoteVideo stream={peers[key]} label="Patient" />
+            </div>
+          ))}
+
+          <div
+            className={
+              'pointer-events-none absolute z-20 md:pointer-events-auto md:static md:z-auto md:flex md:h-full md:min-h-0 md:order-1 ' +
+              'bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))] right-3 aspect-[3/4] w-[32vw] max-w-[150px] overflow-hidden rounded-2xl shadow-2xl ring-2 ring-white/35 md:aspect-auto md:w-full md:max-w-none md:rounded-xl md:shadow-none md:ring-0'
+            }
+          >
+            <div className="pointer-events-auto relative h-full w-full">
+              <video
+                ref={userVideo}
+                autoPlay
+                muted
+                playsInline
+                className={`h-full w-full bg-black md:rounded-xl md:border-2 md:border-green-500 ${
+                  isScreenSharing ? 'object-contain' : 'object-cover'
+                }`}
+              />
+              <div className="absolute bottom-1.5 left-1.5 rounded-md bg-black/65 px-2 py-0.5 text-xs font-medium">
+                You
+              </div>
             </div>
           </div>
-          {Object.keys(peers).map(key => (
-            <Video key={key} stream={peers[key]} />
-          ))}
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="bg-gray-800 p-4 flex justify-center items-center space-x-4">
+      <div
+        className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-t border-white/10 bg-gray-900/95 px-2 py-3 backdrop-blur-sm md:gap-4 md:py-4"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+      >
         <button
+          type="button"
           onClick={toggleMute}
-          className={`p-3 rounded-full ${isMuted ? 'bg-red-500' : 'bg-gray-600'} hover:bg-opacity-80 transition`}
+          className={`touch-manipulation flex h-14 w-14 shrink-0 items-center justify-center rounded-full active:scale-95 md:h-12 md:w-12 ${
+            isMuted ? 'bg-red-500' : 'bg-white/15'
+          }`}
         >
-          {isMuted ? <FaMicrophoneSlash size={20} /> : <FaMicrophone size={20} />}
+          {isMuted ? <FaMicrophoneSlash size={22} /> : <FaMicrophone size={22} />}
         </button>
         <button
           type="button"
           onClick={toggleVideo}
           disabled={isScreenSharing}
           title={isScreenSharing ? 'Stop screen share to change camera' : 'Camera on/off'}
-          className={`p-3 rounded-full ${isVideoOff ? 'bg-red-500' : 'bg-gray-600'} hover:bg-opacity-80 transition disabled:opacity-40 disabled:cursor-not-allowed`}
+          className={`touch-manipulation flex h-14 w-14 shrink-0 items-center justify-center rounded-full active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 md:h-12 md:w-12 ${
+            isVideoOff ? 'bg-red-500' : 'bg-white/15'
+          }`}
         >
-          {isVideoOff ? <FaVideoSlash size={20} /> : <FaVideo size={20} />}
+          {isVideoOff ? <FaVideoSlash size={22} /> : <FaVideo size={22} />}
         </button>
         <button
           type="button"
           onClick={shareScreen}
           title={isScreenSharing ? 'Stop sharing' : 'Share screen'}
-          className={`p-3 rounded-full transition ${isScreenSharing ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-600 hover:bg-opacity-80'}`}
+          className={`touch-manipulation flex h-14 w-14 shrink-0 items-center justify-center rounded-full active:scale-95 md:h-12 md:w-12 ${
+            isScreenSharing ? 'bg-amber-600' : 'bg-white/15'
+          }`}
         >
-          {isScreenSharing ? <FaStop size={20} /> : <FaShare size={20} />}
+          {isScreenSharing ? <FaStop size={22} /> : <FaShare size={22} />}
         </button>
         <button
+          type="button"
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="p-3 rounded-full bg-gray-600 hover:bg-opacity-80 transition"
+          className="touch-manipulation flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/15 active:scale-95 md:h-12 md:w-12"
         >
-          <FaComment size={20} />
+          <FaComment size={22} />
         </button>
         <button
+          type="button"
           onClick={endCall}
-          className="p-3 rounded-full bg-red-500 hover:bg-red-600 transition"
+          className="touch-manipulation flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-red-600 active:scale-95 md:h-12 md:w-12"
         >
-          <FaPhoneSlash size={20} />
+          <FaPhoneSlash size={22} />
         </button>
       </div>
 
-      {/* Chat Panel */}
       {isChatOpen && (
-        <div className="fixed right-4 top-4 bottom-24 z-50 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden border border-gray-200">
-          <div className="p-4 border-b flex justify-between items-center shrink-0">
-            <h3 className="font-semibold">Chat</h3>
-            <button
-              type="button"
-              onClick={() => setIsChatOpen(false)}
-              className="p-1 rounded hover:bg-gray-100 text-gray-600"
-              aria-label="Close chat"
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50 md:justify-start md:bg-transparent md:p-4">
+          <div className="mx-auto flex max-h-[min(85dvh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white text-gray-900 shadow-2xl md:mx-0 md:max-h-[calc(100vh-6rem)] md:rounded-xl md:rounded-tr-2xl">
+            <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
+              <h3 className="font-semibold">Chat</h3>
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(false)}
+                className="touch-manipulation rounded-full p-2 hover:bg-gray-100"
+                aria-label="Close chat"
+              >
+                <FaTimes size={18} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              {messages.map((msg, index) => (
+                <div key={index} className="mb-2 text-sm">
+                  <span className="font-semibold">{msg.sender}:</span> {msg.text}
+                </div>
+              ))}
+            </div>
+            <div
+              className="flex shrink-0 gap-0 border-t p-3"
+              style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
             >
-              <FaTimes size={18} />
-            </button>
-          </div>
-          <div className="flex-1 min-h-0 p-4 overflow-y-auto">
-            {messages.map((msg, index) => (
-              <div key={index} className="mb-2">
-                <span className="font-semibold">{msg.sender}:</span> {msg.text}
-              </div>
-            ))}
-          </div>
-          <div className="p-4 border-t flex">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-              className="flex-1 border rounded-l px-2 py-1"
-              placeholder="Type a message..."
-            />
-            <button
-              onClick={sendMessage}
-              className="bg-blue-500 text-white px-4 py-1 rounded-r hover:bg-blue-600"
-            >
-              Send
-            </button>
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                className="min-h-12 flex-1 rounded-l-lg border border-r-0 border-gray-300 px-3 text-base outline-none focus:border-blue-500"
+                placeholder="Message…"
+              />
+              <button
+                type="button"
+                onClick={sendMessage}
+                className="touch-manipulation min-h-12 rounded-r-lg bg-blue-600 px-4 text-sm font-medium text-white active:bg-blue-700"
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -362,7 +403,7 @@ const VideoCall = () => {
   );
 };
 
-const Video = ({ stream }) => {
+function RemoteVideo({ stream, label, fill }) {
   const ref = useRef();
 
   useEffect(() => {
@@ -373,24 +414,34 @@ const Video = ({ stream }) => {
       el.play().catch(() => {});
     };
     play();
-    stream.addEventListener("addtrack", play);
-    return () => stream.removeEventListener("addtrack", play);
+    stream.addEventListener('addtrack', play);
+    return () => stream.removeEventListener('addtrack', play);
   }, [stream]);
 
   return (
-    <div className="relative min-h-[200px] bg-black rounded-lg">
+    <div
+      className={
+        fill
+          ? 'relative h-full min-h-0 w-full bg-black'
+          : 'relative min-h-[200px] w-full rounded-xl bg-black md:min-h-0 md:h-full'
+      }
+    >
       <video
         ref={ref}
         autoPlay
         playsInline
         muted={false}
-        className="w-full h-full min-h-[200px] object-contain rounded-lg border-2 border-blue-500"
+        className={
+          fill
+            ? 'h-full w-full object-cover'
+            : 'h-full min-h-[200px] w-full rounded-xl border-2 border-blue-500 object-contain md:min-h-0 md:object-cover'
+        }
       />
-      <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
-        Patient
+      <div className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-xs font-medium text-white">
+        {label}
       </div>
     </div>
   );
-};
+}
 
 export default VideoCall;
