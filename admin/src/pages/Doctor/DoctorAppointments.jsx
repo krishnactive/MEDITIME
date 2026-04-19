@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DoctorContext } from '../../context/DoctortContext';
 import { AppContext } from '../../context/AppContext';
 import { assets } from '../../assets/assets';
@@ -6,6 +7,7 @@ import { assets } from '../../assets/assets';
 const DoctorAppointments = () => {
   const { dToken, appointments, getAppointments, cancelAppointment, completeAppointment } = useContext(DoctorContext);
   const { slotDateFormat, calculateAge, currency } = useContext(AppContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (dToken) {
@@ -132,6 +134,14 @@ const exportAppointmentsAsCSV = () => {
                   onClick={() => completeAppointment(item._id)}
                   className="w-8 cursor-pointer"
                 />
+                {item.callRoomId && (
+                <button
+                  onClick={() => navigate(`/video-call/${item.callRoomId}`)}
+                  className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                >
+                  Join Call
+                </button>
+                )}
               </div>
             )}
           </div>

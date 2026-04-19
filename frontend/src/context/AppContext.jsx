@@ -69,6 +69,53 @@ const AppContextProvider = (props) => {
         }
     }, [token]);
 
+    // Poll ~30 min before scheduled appointments; toast + optional browser notification
+    useEffect(() => {
+        if (!token || !backendUrl) return;
+
+        const STORAGE_KEY = "meditime_patient_call_reminders";
+
+        const poll = async () => {
+            try {
+                const { data } = await axios.get(`${backendUrl}/api/user/call-reminders`, {
+                    headers: { token },
+                });
+                if (!data?.success || !Array.isArray(data.reminders)) return;
+
+                let shown = {};
+                try {
+                    shown = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "{}");
+                } catch {
+                    shown = {};
+                }
+
+                for (const r of data.reminders) {
+                    if (shown[r.appointmentId]) continue;
+                    shown[r.appointmentId] = Date.now();
+                    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(shown));
+
+                    const docName = r.docData?.name || "your doctor";
+                    const msg = `Your appointment with ${docName} starts in about ${r.minutesLeft} minutes (${r.slotTime}).`;
+                    toast.info(msg, { autoClose: 15000 });
+
+                    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+                        try {
+                            new Notification("MediTime — Upcoming appointment", { body: msg });
+                        } catch (e) {
+                            console.warn("Notification failed:", e);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("call-reminders poll:", e);
+            }
+        };
+
+        poll();
+        const interval = setInterval(poll, 60 * 1000);
+        return () => clearInterval(interval);
+    }, [token, backendUrl]);
+
 
     return (
         <AppContext.Provider value={value}>

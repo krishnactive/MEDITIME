@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -107,6 +107,52 @@ const DoctorContextProvider = (props) => {
     profileData, setProfileData, getProfileData,
     cancelAppointment, completeAppointment
   };
+
+  useEffect(() => {
+    if (!dToken || !backendUrl) return;
+
+    const STORAGE_KEY = "meditime_doctor_call_reminders";
+
+    const poll = async () => {
+      try {
+        const { data } = await axios.get(`${backendUrl}/api/doctor/call-reminders`, {
+          headers: { dtoken: dToken },
+        });
+        if (!data?.success || !Array.isArray(data.reminders)) return;
+
+        let shown = {};
+        try {
+          shown = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "{}");
+        } catch {
+          shown = {};
+        }
+
+        for (const r of data.reminders) {
+          if (shown[r.appointmentId]) continue;
+          shown[r.appointmentId] = Date.now();
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(shown));
+
+          const patientName = r.userData?.name || "Patient";
+          const msg = `Your appointment with ${patientName} starts in about ${r.minutesLeft} minutes (${r.slotTime}).`;
+          toast.info(msg, { autoClose: 15000 });
+
+          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+            try {
+              new Notification("MediTime — Upcoming appointment", { body: msg });
+            } catch (e) {
+              console.warn("Notification failed:", e);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("call-reminders poll:", e);
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 60 * 1000);
+    return () => clearInterval(interval);
+  }, [dToken, backendUrl]);
 
   return (
     <DoctorContext.Provider value={value}>

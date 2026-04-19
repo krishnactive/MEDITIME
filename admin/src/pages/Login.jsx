@@ -37,6 +37,9 @@ const Login = () => {
           setDToken(token);
           localStorage.setItem('dToken', token);
           navigate('/doctor-dashboard');
+          if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission().catch(() => {});
+          }
         }
         toast.success(`${role} login successful!`);
       } else {

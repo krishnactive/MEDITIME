@@ -12,6 +12,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import { ToastContainer, toast } from 'react-toastify';
 import UploadReport from './pages/UploadReport'
+import VideoCall from './pages/VideoCall'
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
         <Route path='/my-appointments' element={<MyAppointments />} />
         <Route path='/appointment/:docId' element={<Appointment />} />
         <Route path='know-reports' element={<UploadReport/>}/>
+        <Route path='/video-call/:roomId' element={<VideoCall />} />
       </Routes>
       <Footer/>
     </div>

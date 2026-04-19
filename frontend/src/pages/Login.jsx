@@ -31,6 +31,9 @@ const Login = () => {
         localStorage.setItem('token', response.data.token);
         setToken(response.data.token);
         toast.success(`${mode === 'Sign Up' ? 'Account created' : 'Logged in'} successfully!`);
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => {});
+        }
       } else {
         toast.error(response.data.message);
       }

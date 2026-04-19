@@ -22,8 +22,8 @@ const MyAppointments = () => {
             });
 
             if (data.success) {
-                setAppointments(data.appointments.reverse());
-                console.log("Appointments fetched successfully:", data.appointments);
+                const list = Array.isArray(data.appointments) ? data.appointments : [];
+                setAppointments([...list].reverse());
             }
 
             
@@ -150,7 +150,12 @@ const MyAppointments = () => {
                                 </>
                             )}
                             {!item.cancelled && item.payment && !item.isCompleted && (
-                                <button className='sm:min-w-48 py-2 border rounded text-stone-500 bg-[#EAEFFF]'>Paid</button>
+                                <>
+                                    <button className='sm:min-w-48 py-2 border rounded text-stone-500 bg-[#EAEFFF]'>Paid</button>
+                                    {item.callRoomId && (
+                                    <button onClick={() => navigate(`/video-call/${item.callRoomId}`)} className='sm:min-w-48 py-2 border rounded bg-blue-500 text-white hover:bg-blue-600'>Join Call</button>
+                                    )}
+                                </>
                             )}
                             {item.isCompleted && (
                                 <button className='sm:min-w-48 py-2 border border-green-500 rounded text-green-500'>Completed</button>

@@ -6,7 +6,9 @@ import userModel from "../models/userModel.js";
 import { v2 as cloudinary} from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
+import { selectUpcomingReminders } from "../utils/appointmentSchedule.js";
 import razorpay from "razorpay";
+import crypto from "crypto";
 
 const registerUser = async (req, res) => {
   try {
@@ -156,6 +158,8 @@ const bookAppointment = async (req, res) => {
 
         delete docData.slots_booked
 
+        const callRoomId = crypto.randomUUID(); // Generate unique room ID for video call
+
         const appointmentData = {
             userId,
             docId,
@@ -164,7 +168,8 @@ const bookAppointment = async (req, res) => {
             amount: docData.fees,
             slotTime,
             slotDate,
-            date: Date.now()
+            date: Date.now(),
+            callRoomId
         }
 
         const newAppointment = new appointmentModel(appointmentData)
@@ -188,10 +193,6 @@ const listAppointments = async (req, res) => {
     try {
         const userId = req.userId;
         const appointments = await appointmentModel.find({ userId }).sort({ date: -1 });
-
-        if (appointments.length === 0) {
-            return res.json({ success: false, message: 'No appointments found' });
-        }
 
         res.json({ success: true, appointments });
 
@@ -289,4 +290,71 @@ const verifyRazorpay = async (req, res) => {
 
 
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointments, cancelAppointment, paymentRazorpay, verifyRazorpay };
+// API to start video call
+const startCall = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { appointmentId } = req.body;
+
+        const appointment = await appointmentModel.findById(appointmentId);
+        if (!appointment || String(appointment.userId) !== String(userId)) {
+            return res.json({ success: false, message: 'Appointment not found' });
+        }
+
+        if (appointment.callStartTime) {
+            return res.json({ success: true, message: 'Call already in progress' });
+        }
+
+        await appointmentModel.findByIdAndUpdate(appointmentId, { callStartTime: new Date() });
+        res.json({ success: true, message: 'Call started' });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+// API to end video call
+const endCall = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { appointmentId } = req.body;
+
+        const appointment = await appointmentModel.findById(appointmentId);
+        if (!appointment || String(appointment.userId) !== String(userId)) {
+            return res.json({ success: false, message: 'Appointment not found' });
+        }
+
+        if (!appointment.callStartTime) {
+            return res.json({ success: false, message: 'Call not started' });
+        }
+
+        const callDuration = Math.round((new Date() - new Date(appointment.callStartTime)) / (1000 * 60)); // in minutes
+        const prev = Number(appointment.callDuration) || 0;
+        await appointmentModel.findByIdAndUpdate(appointmentId, {
+            callDuration: prev + callDuration,
+            callStartTime: null
+        });
+
+        res.json({ success: true, message: 'Call ended', duration: callDuration });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+// Upcoming appointment reminders (~30 minutes before slot)
+const upcomingCallReminders = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const appointments = await appointmentModel.find({ userId });
+        const reminders = selectUpcomingReminders(appointments);
+        res.json({ success: true, reminders });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointments, cancelAppointment, paymentRazorpay, verifyRazorpay, startCall, endCall, upcomingCallReminders };

@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
+import { selectUpcomingReminders } from "../utils/appointmentSchedule.js";
 
 // Doctor Login
 const loginDoctor = async (req, res) => {
@@ -151,6 +152,73 @@ const doctorDashboard = async (req, res) => {
   }
 };
 
+// Start video call for doctor
+const startCallDoctor = async (req, res) => {
+  try {
+    const docId = req.docId;
+    const { appointmentId } = req.body;
+
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment || String(appointment.docId) !== String(docId)) {
+      return res.json({ success: false, message: 'Appointment not found' });
+    }
+
+    if (appointment.callStartTime) {
+      return res.json({ success: true, message: 'Call already in progress' });
+    }
+
+    await appointmentModel.findByIdAndUpdate(appointmentId, { callStartTime: new Date() });
+    res.json({ success: true, message: 'Call started' });
+
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+}
+
+// End video call for doctor
+const endCallDoctor = async (req, res) => {
+  try {
+    const docId = req.docId;
+    const { appointmentId } = req.body;
+
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment || String(appointment.docId) !== String(docId)) {
+      return res.json({ success: false, message: 'Appointment not found' });
+    }
+
+    if (!appointment.callStartTime) {
+      return res.json({ success: false, message: 'Call not started' });
+    }
+
+    const callDuration = Math.round((new Date() - new Date(appointment.callStartTime)) / (1000 * 60)); // in minutes
+    const prev = Number(appointment.callDuration) || 0;
+    await appointmentModel.findByIdAndUpdate(appointmentId, { 
+      callDuration: prev + callDuration,
+      callStartTime: null 
+    });
+
+    res.json({ success: true, message: 'Call ended', duration: callDuration });
+
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+}
+
+// Upcoming appointment reminders (~30 minutes before slot)
+const upcomingCallReminders = async (req, res) => {
+  try {
+    const docId = req.docId;
+    const appointments = await appointmentModel.find({ docId });
+    const reminders = selectUpcomingReminders(appointments);
+    res.json({ success: true, reminders });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   loginDoctor,
   appointmentsDoctor,
@@ -160,5 +228,8 @@ export {
   appointmentComplete,
   doctorDashboard,
   doctorProfile,
-  updateDoctorProfile
+  updateDoctorProfile,
+  startCallDoctor,
+  endCallDoctor,
+  upcomingCallReminders
 };
