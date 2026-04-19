@@ -22,63 +22,81 @@ const VideoCall = () => {
   const peersRef = useRef({});
   const streamRef = useRef();
   const screenStreamRef = useRef(null);
+  const roomJoinedRef = useRef(false);
   const [appointmentId, setAppointmentId] = useState(null);
   const [callStarted, setCallStarted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   useEffect(() => {
+    roomJoinedRef.current = false;
     const socketUrl = getSocketBaseUrl(backendUrl);
     socketRef.current = io(socketUrl, { transports: ["websocket", "polling"] });
     const myPeer = new Peer(undefined, getPeerClientOptions());
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-      streamRef.current = stream;
-      if (userVideo.current) {
-        userVideo.current.srcObject = stream;
-      }
-
-      myPeer.on('call', call => {
-        const s = streamRef.current;
-        if (s) call.answer(s);
-        call.on('stream', userVideoStream => {
-          addVideoStream(userVideoStream, call.peer);
-        });
+    const mediaPromise = navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        streamRef.current = stream;
+        if (userVideo.current) userVideo.current.srcObject = stream;
+        return stream;
       });
 
-      socketRef.current.on('user-connected', userId => {
-        connectToNewUser(userId, myPeer);
+    myPeer.on("call", (call) => {
+      call.on("stream", (remoteStream) => {
+        addVideoStream(remoteStream, call.peer);
       });
-
-      socketRef.current.on('receive-message', (message) => {
-        setMessages(prev => [...prev, message]);
-      });
-
-      socketRef.current.on('user-disconnected', userId => {
-        if (peersRef.current[userId]) {
-          peersRef.current[userId].close();
-          delete peersRef.current[userId];
-        }
-        setPeers(prev => {
-          if (!prev[userId]) return prev;
-          const next = { ...prev };
-          delete next[userId];
-          return next;
-        });
-      });
-    }).catch(err => {
-      console.error('Error accessing media devices:', err);
-      alert('Camera and microphone access is required for video calls');
-      navigate('/my-appointments');
+      call.on("error", (err) => console.error("Peer incoming call error:", err));
+      mediaPromise
+        .then((stream) => {
+          if (stream) call.answer(stream);
+        })
+        .catch(() => {});
     });
 
-    myPeer.on('open', id => {
-      socketRef.current.emit('join-room', roomId, id);
+    const tryJoinRoom = () => {
+      if (roomJoinedRef.current) return;
+      const pid = myPeer.id;
+      if (!pid || !socketRef.current?.connected) return;
+      roomJoinedRef.current = true;
+      socketRef.current.emit("join-room", roomId, pid);
+    };
+    myPeer.on("open", tryJoinRoom);
+    socketRef.current.on("connect", tryJoinRoom);
+
+    socketRef.current.on("user-connected", (userId) => {
+      mediaPromise
+        .then(() => connectToNewUser(userId, myPeer))
+        .catch(() => {});
+    });
+
+    socketRef.current.on("receive-message", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    socketRef.current.on("user-disconnected", (userId) => {
+      if (peersRef.current[userId]) {
+        peersRef.current[userId].close();
+        delete peersRef.current[userId];
+      }
+      setPeers((prev) => {
+        if (!prev[userId]) return prev;
+        const next = { ...prev };
+        delete next[userId];
+        return next;
+      });
+    });
+
+    mediaPromise.catch((err) => {
+      console.error("Error accessing media devices:", err);
+      alert("Camera and microphone access is required for video calls");
+      navigate("/my-appointments");
     });
 
     return () => {
-      screenStreamRef.current?.getTracks().forEach(track => track.stop());
+      roomJoinedRef.current = false;
+      screenStreamRef.current?.getTracks().forEach((track) => track.stop());
       screenStreamRef.current = null;
-      streamRef.current?.getTracks().forEach(track => track.stop());
+      streamRef.current?.getTracks().forEach((track) => track.stop());
       myPeer.destroy();
       socketRef.current.disconnect();
     };
@@ -120,10 +138,11 @@ const VideoCall = () => {
     const stream = streamRef.current;
     if (!stream) return;
     const call = myPeer.call(userId, stream);
-    call.on('stream', userVideoStream => {
+    call.on("error", (err) => console.error("Peer outgoing call error:", err));
+    call.on("stream", (userVideoStream) => {
       addVideoStream(userVideoStream, userId);
     });
-    call.on('close', () => {
+    call.on("close", () => {
       removeVideoStream(userId);
     });
     peersRef.current[userId] = call;
@@ -347,12 +366,26 @@ const Video = ({ stream }) => {
   const ref = useRef();
 
   useEffect(() => {
-    if (ref.current) ref.current.srcObject = stream;
+    const el = ref.current;
+    if (!el || !stream) return;
+    el.srcObject = stream;
+    const play = () => {
+      el.play().catch(() => {});
+    };
+    play();
+    stream.addEventListener("addtrack", play);
+    return () => stream.removeEventListener("addtrack", play);
   }, [stream]);
 
   return (
     <div className="relative min-h-[200px] bg-black rounded-lg">
-      <video ref={ref} autoPlay playsInline className="w-full h-full min-h-[200px] object-contain rounded-lg border-2 border-green-500" />
+      <video
+        ref={ref}
+        autoPlay
+        playsInline
+        muted={false}
+        className="w-full h-full min-h-[200px] object-contain rounded-lg border-2 border-green-500"
+      />
       <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
         Doctor
       </div>
