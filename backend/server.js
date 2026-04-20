@@ -75,6 +75,10 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('receive-message', message);
   });
 
+  socket.on('screen-share-toggle', (roomId, isSharing) => {
+    socket.to(roomId).emit('remote-screen-share-toggle', isSharing);
+  });
+
   socket.on('disconnect', () => {
     const { videoRoomId, peerUserId } = socket.data;
     if (videoRoomId && peerUserId) {

@@ -26,6 +26,7 @@ const VideoCall = () => {
   const [appointmentId, setAppointmentId] = useState(null);
   const [callStarted, setCallStarted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const originalStreamRef = useRef(null); // Store original camera stream
 
   useEffect(() => {
     roomJoinedRef.current = false;
@@ -84,6 +85,11 @@ const VideoCall = () => {
         delete next[userId];
         return next;
       });
+    });
+
+    socketRef.current.on("remote-screen-share-toggle", (isSharing) => {
+      console.log("Remote (doctor) screen share toggled:", isSharing);
+      // Optional: UI indication e.g. badge on doctor video
     });
 
     mediaPromise.catch((err) => {
@@ -183,27 +189,47 @@ const VideoCall = () => {
   };
 
   const replaceVideoOnAllCalls = (videoTrack) => {
-    Object.values(peersRef.current).forEach(call => {
-      const pc = call?.peerConnection;
-      if (!pc) return;
-      const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
-      if (!sender) return;
-      if (videoTrack) sender.replaceTrack(videoTrack);
-      else sender.replaceTrack(null);
+    console.log("Patient attempting replace track with:", videoTrack ? "screen track" : "camera track");
+    Object.values(peersRef.current).forEach((call, index) => {
+      try {
+        const pc = call?.peerConnection;
+        if (!pc) {
+          console.warn(`No peerConnection for call ${index}`);
+          return;
+        }
+        const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (!sender) {
+          console.warn(`No video sender for call ${index}`);
+          return;
+        }
+        sender.replaceTrack(videoTrack).then(() => {
+          console.log(`replaceTrack success for call ${index}`);
+        }).catch(err => {
+          console.error(`replaceTrack failed for call ${index}:`, err);
+        });
+      } catch (err) {
+        console.error(`Error replacing track for call ${index}:`, err);
+      }
     });
   };
 
-  const stopScreenShare = () => {
-    const screen = screenStreamRef.current;
-    if (screen) {
-      screen.getTracks().forEach(t => t.stop());
+  const stopScreenShare = async () => {
+    console.log("Patient stopping screen share");
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(t => t.stop());
       screenStreamRef.current = null;
     }
-    const cam = streamRef.current;
-    const camVideo = cam?.getVideoTracks()[0];
-    replaceVideoOnAllCalls(camVideo ?? null);
-    if (userVideo.current && cam) userVideo.current.srcObject = cam;
+    
+    socketRef.current.emit('screen-share-toggle', roomId, false);
+    
+    const camStream = originalStreamRef.current || streamRef.current;
+    if (camStream && userVideo.current) {
+      userVideo.current.srcObject = camStream;
+    }
     setIsScreenSharing(false);
+    
+    const camVideoTrack = camStream?.getVideoTracks()[0];
+    replaceVideoOnAllCalls(camVideoTrack);
   };
 
   const endCall = async () => {
