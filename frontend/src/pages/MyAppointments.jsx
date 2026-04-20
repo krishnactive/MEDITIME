@@ -11,6 +11,9 @@ const MyAppointments = () => {
     // const { appointments = [] } = useContext(AppContext) // fallback empty list
     const [payment, setPayment] = useState('')
     const [appointments, setAppointments] = useState([])
+    const [uploadModalOpen, setUploadModalOpen] = useState(false)
+    const [selectedAppointment, setSelectedAppointment] = useState(null)
+    const [uploadFiles, setUploadFiles] = useState([])
     
     const navigate = useNavigate()
 
@@ -25,6 +28,45 @@ const MyAppointments = () => {
                 const list = Array.isArray(data.appointments) ? data.appointments : [];
                 setAppointments([...list].reverse());
             }
+        }
+    } catch (error) {
+        console.error("Error fetching appointments:", error);
+        toast.error(error.response?.data?.message || "Failed to fetch appointments");
+    }
+}
+
+const handleFileUpload = async () => {
+    if (!selectedAppointment || uploadFiles.length === 0) return;
+
+    const formData = new FormData();
+    uploadFiles.forEach(file => formData.append('files', file));
+
+    try {
+        const response = await axios.post(
+            `${backendUrl}/api/reports/appointment/${selectedAppointment._id}/upload-files`,
+            formData,
+            { headers: { token, 'Content-Type': 'multipart/form-data' } }
+        );
+        if (response.data.success) {
+            toast.success('Files uploaded successfully');
+            setUploadModalOpen(false);
+            setSelectedAppointment(null);
+            setUploadFiles([]);
+            fetchAppointments();
+        }
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Upload failed');
+        console.error('Upload error:', error);
+    }
+};
+
+const handleDownloadFile = (appointmentId, filename) => {
+    window.open(`${backendUrl}/api/reports/appointment/${appointmentId}/download/${encodeURIComponent(filename)}`, '_blank');
+};
+
+const handleDownloadPrescription = (appointmentId) => {
+    window.open(`${backendUrl}/api/reports/appointment/${appointmentId}/download-prescription`, '_blank');
+};
 
             
         } catch (error) {
@@ -158,7 +200,25 @@ const MyAppointments = () => {
                                 </>
                             )}
                             {item.isCompleted && (
-                                <button className='sm:min-w-48 py-2 border border-green-500 rounded text-green-500'>Completed</button>
+                                <div className='space-y-1'>
+                                    <button className='sm:min-w-48 py-2 border border-green-500 rounded text-green-500'>Completed</button>
+                                    {item.filesCount > 0 && (
+                                        <button 
+                                            onClick={() => setSelectedAppointment(item)}
+                                            className='sm:min-w-48 py-1 text-xs border rounded bg-blue-100 text-blue-600 hover:bg-blue-200'
+                                        >
+                                            📁 {item.filesCount} file{item.filesCount > 1 ? 's' : ''}
+                                        </button>
+                                    )}
+                                    {item.hasPrescription && (
+                                        <button 
+                                            onClick={() => handleDownloadPrescription(item._id)}
+                                            className='sm:min-w-48 py-1 text-xs border rounded bg-purple-100 text-purple-600 hover:bg-purple-200'
+                                        >
+                                            💊 Download Prescription
+                                        </button>
+                                    )}
+                                </div>
                             )}
                             {!item.cancelled && !item.isCompleted && (
                                 <button onClick={()=>cancelAppointment(item._id)} className='text-stone-500 sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300'>Cancel appointment</button>
@@ -170,6 +230,61 @@ const MyAppointments = () => {
                     </div> 
                 ))}
             </div>
+
+            {/* Upload Modal */}
+            {uploadModalOpen && selectedAppointment && (
+                <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+                    <div className='bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto'>
+                        <div className='flex justify-between items-center mb-4'>
+                            <h3 className='text-xl font-semibold'>Upload Files</h3>
+                            <button onClick={() => {
+                                setUploadModalOpen(false);
+                                setSelectedAppointment(null);
+                                setUploadFiles([]);
+                            }} className='text-2xl'>×</button>
+                        </div>
+                        <input
+                            type='file'
+                            multiple
+                            accept='image/*,.pdf'
+                            onChange={(e) => setUploadFiles(Array.from(e.target.files))}
+                            className='w-full p-3 border rounded-lg mb-4'
+                        />
+                        {uploadFiles.length > 0 && (
+                            <div className='text-sm text-gray-600 mb-4'>
+                                Selected: {uploadFiles.length} file{uploadFiles.length > 1 ? 's' : ''}
+                                <ul className='mt-2 space-y-1 max-h-32 overflow-y-auto'>
+                                    {uploadFiles.map((file, idx) => (
+                                        <li key={idx} className='flex justify-between'>
+                                            <span>{file.name}</span>
+                                            <span className='font-mono text-xs opacity-75'>{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        <div className='flex gap-3'>
+                            <button 
+                                onClick={handleFileUpload}
+                                disabled={uploadFiles.length === 0}
+                                className='flex-1 bg-blue-500 text-white py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600'
+                            >
+                                Upload
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setUploadModalOpen(false);
+                                    setSelectedAppointment(null);
+                                    setUploadFiles([]);
+                                }}
+                                className='flex-1 border py-2 rounded-lg hover:bg-gray-100'
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -14,6 +14,7 @@ import {
   upcomingCallReminders
 } from '../controllers/doctorController.js';
 import authDoctor from '../middlewares/authDoctor.js';
+import { addPrescription } from '../controllers/appointmentFilesController.js';
 
 const doctorRouter = express.Router();
 
@@ -29,6 +30,9 @@ doctorRouter.post("/cancel-appointment", authDoctor, appointmentCancel);
 doctorRouter.post("/complete-appointment", authDoctor, appointmentComplete);
 doctorRouter.post("/start-call", authDoctor, startCallDoctor);
 doctorRouter.post("/end-call", authDoctor, endCallDoctor);
+
+// Prescription route
+doctorRouter.post("/appointment/:appointmentId/prescription", authDoctor, addPrescription);
 
 // Dashboard
 doctorRouter.get("/dashboard", authDoctor, doctorDashboard);

@@ -192,9 +192,16 @@ const bookAppointment = async (req, res) => {
 const listAppointments = async (req, res) => {
     try {
         const userId = req.userId;
-        const appointments = await appointmentModel.find({ userId }).sort({ date: -1 });
+        const appointments = await appointmentModel.find({ userId }).sort({ date: -1 }).populate('files');
 
-        res.json({ success: true, appointments });
+        // Lean for performance, add computed fields
+        const appointmentsWithStats = appointments.map(apt => ({
+            ...apt.toObject(),
+            filesCount: apt.files ? apt.files.length : 0,
+            hasPrescription: !!apt.prescription
+        }));
+
+        res.json({ success: true, appointments: appointmentsWithStats });
 
     } catch (error) {
         console.log(error);

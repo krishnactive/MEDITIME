@@ -15,6 +15,20 @@ const appointmentSchema = new mongoose.Schema({
     callRoomId: { type: String, default: null },
     callStartTime: { type: Date, default: null },
     callDuration: { type: Number, default: 0 }, // in minutes
+    
+    // New fields for files and prescription
+    files: [{
+      filename: String,
+      path: String,
+      mimetype: String,
+      size: Number,
+      uploadedAt: { type: Date, default: Date.now }
+    }],
+    prescription: {
+      text: String,
+      filePath: String,
+      createdAt: { type: Date, default: Date.now }
+    }
 })
 
 const appointmentModel = mongoose.models.appointment || mongoose.model("appointment", appointmentSchema)
