@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext'
 import { assets } from '../assets/assets'
 import axios from 'axios';
@@ -19,7 +19,6 @@ const MyAppointments = () => {
 
     const fetchAppointments = async () => {
         try {
-
             const {data} = await axios.get(`${backendUrl}/api/user/appointments`, {
                 headers: { token }
             });
@@ -28,12 +27,11 @@ const MyAppointments = () => {
                 const list = Array.isArray(data.appointments) ? data.appointments : [];
                 setAppointments([...list].reverse());
             }
+        } catch (error) {
+            console.error('Error fetching appointments:', error);
+            toast.error(error.response?.data?.message || "Failed to fetch appointments");
         }
-    } catch (error) {
-        console.error("Error fetching appointments:", error);
-        toast.error(error.response?.data?.message || "Failed to fetch appointments");
-    }
-}
+    };
 
 const handleFileUpload = async () => {
     if (!selectedAppointment || uploadFiles.length === 0) return;
@@ -67,15 +65,6 @@ const handleDownloadFile = (appointmentId, filename) => {
 const handleDownloadPrescription = (appointmentId) => {
     window.open(`${backendUrl}/api/reports/appointment/${appointmentId}/download-prescription`, '_blank');
 };
-
-            
-        } catch (error) {
-            console.error("Error fetching appointments:", error);
-            toast.error(error.response?.data?.message || "Failed to fetch appointments");
-
-
-        }
-    }
     useEffect(() => {
         fetchAppointments();
     }, [token]);
