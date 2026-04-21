@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
     cb(null, file.fieldname + '-' + uniqueName);
   }
 });
-const uploadBase = multer({ 
+const upload = multer({ 
   storage, 
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
@@ -24,10 +24,7 @@ const uploadBase = multer({
       cb(new Error('Only images and PDF allowed'), false);
     }
   }
-});
-
-const upload = uploadBase.array('files', 10);
-const uploadSingleFile = uploadBase.single('prescriptionFile');
+}).array('files', 10);
 
 // User uploads files to appointment
 export const uploadFilesToAppointment = [
@@ -109,7 +106,7 @@ export const downloadFile = [
 // Doctor adds prescription (text or file)
 export const addPrescription = [
   authDoctor,
-  uploadSingleFile,
+  upload.single('prescriptionFile'),
   async (req, res) => {
     try {
       const { appointmentId } = req.params;
