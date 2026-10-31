@@ -59,7 +59,7 @@ const googleLogin = async (req, res) => {
       });
     } else {
       user.googleId = googleId;
-      if (payload.picture && (!user.image || user.image === 'https://ibb.co/7Js6wHdh')) {
+      if (payload.picture && (!user.image || user.image === 'https://res.cloudinary.com/de3dlsov2/image/upload/v1749630538/samples/animals/reindeer.jpg')) {
         user.image = payload.picture;
       }
     }
