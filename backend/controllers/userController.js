@@ -1,5 +1,4 @@
-import validator from "validator";
-import bcrypt from "bcrypt";
+import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 // import uploadImageToCloudinary from "../utils/uploadImageToCloudinary.js";
@@ -10,78 +9,68 @@ import { selectUpcomingReminders } from "../utils/appointmentSchedule.js";
 import razorpay from "razorpay";
 import crypto from "crypto";
 
-const registerUser = async (req, res) => {
+const googleLogin = async (req, res) => {
+  const { credential } = req.body;
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+
+  if (!googleClientId || !process.env.JWT_SECRET) {
+    console.error('Google login requires GOOGLE_CLIENT_ID and JWT_SECRET configuration.');
+    return res.status(500).json({ success: false, message: 'Google login is not configured.' });
+  }
+
+  if (typeof credential !== 'string' || !credential) {
+    return res.status(400).json({ success: false, message: 'Google credential is required.' });
+  }
+
+  let payload;
   try {
-    const { name, email, password } = req.body;
+    const ticket = await new OAuth2Client(googleClientId).verifyIdToken({
+      idToken: credential,
+      audience: googleClientId,
+    });
+    payload = ticket.getPayload();
+  } catch (error) {
+    console.error('Google credential verification failed:', error);
+    return res.status(401).json({ success: false, message: 'Google sign-in failed. Please try again.' });
+  }
 
-    const existingUser = await userModel.findOne({ email });
-    if (existingUser) {
-        return res.status(400).json({ success: false, message: 'Email already registered' });
+  const googleId = payload?.sub;
+  const email = payload?.email?.toLowerCase();
+  if (!googleId || !email || payload?.email_verified !== true) {
+    return res.status(401).json({ success: false, message: 'Google account could not be verified.' });
+  }
+
+  try {
+    let user = await userModel.findOne({ googleId });
+    if (!user) {
+      user = await userModel.findOne({ email }).collation({ locale: 'en', strength: 2 });
     }
-    // Check required fields
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
+
+    if (user?.googleId && user.googleId !== googleId) {
+      return res.status(409).json({ success: false, message: 'This email is linked to a different Google account.' });
     }
 
-    // Validate email format
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ success: false, message: 'Invalid email format' });
+    if (!user) {
+      user = new userModel({
+        name: payload.name || email.split('@')[0],
+        email,
+        googleId,
+        ...(payload.picture ? { image: payload.picture } : {}),
+      });
+    } else {
+      user.googleId = googleId;
+      if (payload.picture && (!user.image || user.image === 'https://ibb.co/7Js6wHdh')) {
+        user.image = payload.picture;
+      }
     }
+    await user.save();
 
-    // Validate password strength
-    if (password.length < 8) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters long' });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user data
-    const userData = { name, email, password: hashedPassword };
-
-    // Save user to DB
-    const newUser = new userModel(userData);
-    const savedUser = await newUser.save();
-
-    // Generate JWT token
-    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET);
-
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     return res.json({ success: true, token });
 
   } catch (error) {
-    console.error('Error registering user:', error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// API to login user
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Check if user exists
-    const user = await userModel.findOne({ email });
-    if (!user) {
-      return res.json({ success: false, message: "User does not exist" });
-    }
-
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.json({ success: false, message: "Invalid credentials" });
-    }
-
-    // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d' // Optional: add expiration for better security
-    });
-
-    res.json({ success: true, token });
-
-  } catch (error) {
-    console.error("Login error:", error);
-    res.json({ success: false, message: error.message });
+    console.error('Google login error:', error);
+    return res.status(500).json({ success: false, message: 'Unable to complete Google sign-in. Please try again.' });
   }
 };
 
@@ -364,4 +353,4 @@ const upcomingCallReminders = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointments, cancelAppointment, paymentRazorpay, verifyRazorpay, startCall, endCall, upcomingCallReminders };
+export { googleLogin, getProfile, updateProfile, bookAppointment, listAppointments, cancelAppointment, paymentRazorpay, verifyRazorpay, startCall, endCall, upcomingCallReminders };
